@@ -487,6 +487,10 @@ def add_qt5_dependencies(hook_file):
             # in Windows/Linux.
             if lib_name.startswith('qt') and not lib_name.startswith('qt5'):
                 lib_name = 'qt5' + lib_name[2:]
+            # Anaconda: ``dylib`` name contain a dotted version number --
+            # ``libfoo.5.dylib``. These should be removed.
+            if '.' in lib_name:
+                lib_name = lib_name.split('.')[0]
         logger.debug('add_qt5_dependencies: raw lib %s -> parsed lib %s',
                      imp, lib_name)
 
