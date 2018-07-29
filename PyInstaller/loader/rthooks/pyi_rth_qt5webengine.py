@@ -12,7 +12,14 @@ import sys
 
 # See ``pyi_rth_qt5.py`: use a "standard" PyQt5 layout.
 if sys.platform == 'darwin':
-    os.environ['QTWEBENGINEPROCESS_PATH'] = os.path.normpath(os.path.join(
+    framework_path = os.path.normpath(os.path.join(
         sys._MEIPASS, '..', 'Resources', 'PyQt5', 'Qt', 'lib',
         'QtWebEngineCore.framework', 'Helpers'
     ))
+    libexec_path = os.path.normpath(os.path.join(
+        sys._MEIPASS, 'PyQt5', 'Qt', 'libexec', 'QtWebEngineProcess'
+    ))
+    if os.path.exists(framework_path):
+        os.environ['QTWEBENGINEPROCESS_PATH'] = framework_path
+    else:
+        os.environ['QTWEBENGINEPROCESS_PATH'] = libexec_path
