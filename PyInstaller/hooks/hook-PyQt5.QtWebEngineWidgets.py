@@ -18,11 +18,14 @@ hiddenimports, binaries, datas = add_qt5_dependencies(__file__)
 
 # Include the web engine process, translations, and resources.
 rel_data_path = ['PyQt5', 'Qt']
-if compat.is_darwin:
+rel_framework_path = ['lib', 'QtWebEngineCore.framework']
+data_path = pyqt5_library_info.location['DataPath']
+framework_path = os.path.join(data_path, *rel_framework_path)
+is_framework_build = os.path.exists(framework_path)
+if compat.is_darwin and is_framework_build:
     # This is based on the layout of the Mac wheel from PyPi.
-    data_path = pyqt5_library_info.location['DataPath']
-    resources = ['lib', 'QtWebEngineCore.framework', 'Resources']
-    web_engine_process = ['lib', 'QtWebEngineCore.framework', 'Helpers']
+    resources = rel_framework_path + ['Resources']
+    web_engine_process = rel_framework_path + ['Helpers']
     # When Python 3.4 goes EOL (see
     # `PEP 448 <https://www.python.org/dev/peps/pep-0448/>`_, this is
     # better written as ``os.path.join(*rel_data_path, *resources[:-1])``.
