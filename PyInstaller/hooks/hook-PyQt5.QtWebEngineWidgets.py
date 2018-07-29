@@ -48,10 +48,11 @@ else:
         #
         # When Python 3.4 goes EOL (see `PEP 448`_, this is better written as
         # ``os.path.join(*rel_data_path, resources)``.
-        (os.path.join(pyqt5_library_info.location['DataPath'], resources),
-         os.path.join(*(rel_data_path + [resources]))),
-        # Include the webengine process. The ``LibraryExecutablesPath`` is only
-        # valid on Windows and Linux.
+        (os.path.join(data_path, resources),
+         os.path.join(*(rel_data_path + [resources])))
+    ]
+    binaries += [
+        # Include the webengine process.
         #
         # Again, rewrite when Python 3.4 is EOL to
         # ``os.path.join(*rel_data_path, remove_prefix(...``.
