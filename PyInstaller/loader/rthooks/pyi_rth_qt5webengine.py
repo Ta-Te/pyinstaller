@@ -23,3 +23,8 @@ if sys.platform == 'darwin':
         os.environ['QTWEBENGINEPROCESS_PATH'] = framework_path
     else:
         os.environ['QTWEBENGINEPROCESS_PATH'] = libexec_path
+        os.environ['QT_WEBENGINE_ICU_DATA_DIR'] = os.path.normpath(
+            os.path.join(
+                sys._MEIPASS, 'PyQt5', 'Qt', 'resources'
+            )
+        )
