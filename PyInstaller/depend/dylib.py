@@ -298,7 +298,7 @@ def mac_set_relative_dylib_deps(libname, distname):
         For system libraries is still used absolute path. It is unchanged.
         """
         # Match non system dynamic libraries.
-        if not util.in_system_path(pth):
+        if not util.in_system_path(pth) and not (('@rpath/' + os.path.basename(pth)) == pth and len(parent_dir) == 0):
             # Use relative path to dependend dynamic libraries bases on
             # location of the executable.
             print('Match!!!: ' + pth)
