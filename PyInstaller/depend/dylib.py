@@ -301,6 +301,7 @@ def mac_set_relative_dylib_deps(libname, distname):
         if not util.in_system_path(pth):
             # Use relative path to dependend dynamic libraries bases on
             # location of the executable.
+            print('Match!!!: ' + pth)
             return os.path.join('@loader_path', parent_dir,
                 os.path.basename(pth))
 
