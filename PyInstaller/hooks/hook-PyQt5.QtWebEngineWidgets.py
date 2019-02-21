@@ -55,7 +55,7 @@ else:
     # Qt on macOS conda cannot resolve the correct path of ICU even if we put qt.conf.
     # It can only resolve them if on PyQt5/Qt/libexec.
     datas += [(
-        os.path.join(pyqt5_library_info.location['DataPath']),
+        os.path.join(pyqt5_library_info.location['DataPath'], 'resources'),
         os.path.join('PyQt5', 'Qt', 'libexec')
     )]
     binaries += [
