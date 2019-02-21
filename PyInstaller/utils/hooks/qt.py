@@ -83,11 +83,19 @@ class Qt5LibraryInfo:
 # Provide an instance of this class, to avoid each hook constructing its own.
 pyqt5_library_info = Qt5LibraryInfo('PyQt5')
 
+# FIXME: Ugry hacks.
 # If conda on Windows, set by itself.
 if os.name == 'nt' and os.environ.get('CONDA_PREFIX') is not None:
     prefix = os.environ.get('CONDA_PREFIX')
     pyqt5_library_info.location['PluginsPath'] = os.path.join(prefix, 'Library', 'plugins')
     pyqt5_library_info.location['TranslationsPath'] = os.path.join(prefix, 'Library', 'translations')
+    pyqt5_library_info.location['LibraryExecutablesPath'] = os.path.join(prefix, 'Library', 'bin')
+    pyqt5_library_info.location['PrefixPath'] = os.path.join(prefix, 'Library')
+    pyqt5_library_info.location['BinariesPath'] = os.path.join(prefix, 'Library', 'bin')
+    pyqt5_library_info.location['Qml2ImportsPath'] = os.path.join(prefix, 'Library', 'qml')
+    # Actually, the true DataPath is $CONDA_PREFIX\Library\resources, but the original code does some hacks...
+    # https://github.com/pyinstaller/pyinstaller/blob/1844d69f5aa1d64d3feca912ed1698664a3faf3e/PyInstaller/hooks/hook-PyQt5.QtWebEngineWidgets.py#L46
+    pyqt5_library_info.location['DataPath'] = os.path.join(prefix, 'Library')
 
 
 def qt_plugins_dir(namespace):

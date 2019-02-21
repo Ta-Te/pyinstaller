@@ -682,8 +682,13 @@ class COLLECT(Target):
                 continue
             if os.pardir in os.path.normpath(inm).split(os.sep) \
                or os.path.isabs(inm):
-                raise SystemExit('Security-Alert: try to store file outside '
-                                 'of dist-directory. Aborting. %r' % inm)
+                # FIXME: Ugry hacks.
+                # If on Windows with conda, inm and fnm will be same,
+                # `$CONDA_PREFIX\Library\bin\QtWebEngineProcess.exe`.
+                # So, put this to the output root directory.
+                inm = os.path.basename(inm)
+                # raise SystemExit('Security-Alert: try to store file outside '
+                #                  'of dist-directory. Aborting. %r' % inm)
             tofnm = os.path.join(self.name, inm)
             todir = os.path.dirname(tofnm)
             if not os.path.exists(todir):
