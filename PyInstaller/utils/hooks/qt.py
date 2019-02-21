@@ -32,6 +32,7 @@ class Qt5LibraryInfo:
         if namespace not in ['PyQt5', 'PySide2']:
             raise Exception('Invalid namespace: {0}'.format(namespace))
         self.namespace = namespace
+        self.qli = None
 
     # Initialize most of this class only when values are first requested from
     # it.
@@ -69,8 +70,10 @@ class Qt5LibraryInfo:
                 logger.warning('Cannot read QLibraryInfo output: raised %s when '
                                'decoding:\n%s', str(e), json_str)
                 raise
-            for k, v in qli.items():
-                setattr(self, k, v)
+            if self.qli is None
+                for k, v in qli.items():
+                    setattr(self, k, v)
+                self.qli = qli
 
             return getattr(self, name)
         else:
@@ -79,6 +82,12 @@ class Qt5LibraryInfo:
 
 # Provide an instance of this class, to avoid each hook constructing its own.
 pyqt5_library_info = Qt5LibraryInfo('PyQt5')
+
+# If conda on Windows, set by itself.
+if os.name == 'nt' and os.environ.get('CONDA_PREFIX') is not None:
+    prefix = os.environ.get('CONDA_PREFIX')
+    pyqt5_library_info.location['PluginsPath'] = os.path.join(prefix, 'Library', 'plugins')
+    pyqt5_library_info.location['TranslationsPath'] = os.path.join(prefix, 'Library', 'translations')
 
 
 def qt_plugins_dir(namespace):
