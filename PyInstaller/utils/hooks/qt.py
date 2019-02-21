@@ -70,7 +70,7 @@ class Qt5LibraryInfo:
                 logger.warning('Cannot read QLibraryInfo output: raised %s when '
                                'decoding:\n%s', str(e), json_str)
                 raise
-            if self.qli is None
+            if self.qli is None:
                 for k, v in qli.items():
                     setattr(self, k, v)
                 self.qli = qli
