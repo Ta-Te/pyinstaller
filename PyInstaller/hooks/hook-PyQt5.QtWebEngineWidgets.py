@@ -35,6 +35,13 @@ if compat.is_darwin and is_framework_build:
     datas += collect_system_data_files(
         os.path.join(data_path, *web_engine_process),
         os.path.join(*(rel_data_path + web_engine_process[:-1])), True)
+    # FIXME: Ugry hacks
+    # Qt on macOS conda cannot resolve the correct path of ICU even if we put qt.conf.
+    # It can only resolve them if on PyQt5/Qt/libexec.
+    datas += [(
+        os.path.join(pyqt5_library_info.location['DataPath']),
+        os.path.join('PyQt5', 'Qt', 'libexec')
+    )]
 else:
     locales = 'qtwebengine_locales'
     resources = 'resources'
