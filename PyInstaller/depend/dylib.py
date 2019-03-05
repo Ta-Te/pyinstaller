@@ -298,17 +298,25 @@ def mac_set_relative_dylib_deps(libname, distname):
         For system libraries is still used absolute path. It is unchanged.
         """
         # Match non system dynamic libraries.
-        if not util.in_system_path(pth) and not ('@rpath/' + os.path.basename(libname)) == pth:
+        # FIXME: 本当は('@rpath/' + os.path.basename(libname)) != pthなやつのキャッシュを取って対処すべき
+        if not util.in_system_path(pth) and ('@rpath/' + os.path.basename(libname)) != pth and os.path.basename(libname) != pth:
             # Use relative path to dependend dynamic libraries bases on
             # location of the executable.
             print('Match!!!: ' + libname + ', ' + pth)
             return os.path.join('@loader_path', parent_dir,
                 os.path.basename(pth))
         elif ('@rpath/' + os.path.basename(libname)) == pth:
+            # 自分自身へのリンクは、一回目のコールではここに落ちる
             # Use relative path to dependend dynamic libraries bases on
             # location of the executable.
             print('New Match!!!: ' +  libname + ', ' + pth)
             return os.path.basename(pth)
+        elif os.path.basename(libname) == pth:
+            # 自分自身へのリンクは、２回目以降のコールではここに落ちる
+            # Use relative path to dependend dynamic libraries bases on
+            # location of the executable.
+            print('New New Match!!!: ' +  libname + ', ' + pth)
+            return pth
 
     # Rewrite mach headers with @loader_path.
     dll = MachO(libname)
