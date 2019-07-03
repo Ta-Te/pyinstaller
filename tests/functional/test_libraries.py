@@ -16,8 +16,8 @@ import os
 
 # Local imports
 # -------------
-from PyInstaller.compat import is_win, is_py3, is_py36, is_py35, is_darwin, \
-    is_linux, is_64bits
+from PyInstaller.compat import is_win, is_py3, is_py35, is_py36, is_py37, \
+    is_darwin, is_linux, is_64bits
 from PyInstaller.utils.hooks import get_module_attribute, is_module_satisfies
 from PyInstaller.utils.tests import importorskip, xfail, skipif
 
@@ -236,6 +236,12 @@ def test_PyQt5_QtWebKit(pyi_builder):
     pyi_builder.test_script('pyi_lib_PyQt5-QtWebKit.py')
 
 
+PYQT5_NEED_OPENGL = pytest.mark.skipif(is_module_satisfies('PyQt5 <= 5.10.1'),
+    reason='PyQt5 v5.10.1 and older does not package ``opengl32sw.dll``, the '
+    'OpenGL software renderer, which this test requires.')
+
+
+@PYQT5_NEED_OPENGL
 @importorskip('PyQt5')
 def test_PyQt5_uic(tmpdir, pyi_builder, data_dir):
     # Note that including the data_dir fixture copies files needed by this test.
@@ -265,28 +271,30 @@ def test_PyQt5_QWebEngine(pyi_builder, data_dir):
         """.format(data_dir.join('test_web_page.html').strpath))
 
 
+@PYQT5_NEED_OPENGL
 @importorskip('PyQt5')
-def test_PyQt5_QtQuick(pyi_builder):
+def test_PyQt5_QtQml(pyi_builder):
     pyi_builder.test_source(
         """
         import sys
-
-        # Not used. Only here to trigger the hook
-        import PyQt5.QtQuick
 
         from PyQt5.QtGui import QGuiApplication
         from PyQt5.QtQml import QQmlApplicationEngine
         from PyQt5.QtCore import QTimer, QUrl
 
-        app = QGuiApplication([])
+        # Select a style via the `command line <https://doc.qt.io/qt-5/qtquickcontrols2-styles.html#command-line-argument>`_,
+        # since currently PyQt5 doesn't `support https://riverbankcomputing.com/pipermail/pyqt/2018-March/040180.html>`_
+        # ``QQuickStyle``. Using this style with the QML below helps to verify
+        # that all QML files are packaged; see https://github.com/pyinstaller/pyinstaller/issues/3711.
+        app = QGuiApplication(sys.argv + ['-style', 'imagine'])
         engine = QQmlApplicationEngine()
         engine.loadData(b'''
-            import QtQuick 2.0
-            import QtQuick.Controls 2.0
+            import QtQuick 2.11
+            import QtQuick.Controls 2.4
 
             ApplicationWindow {
                 visible: true
-                color: "green"
+                ProgressBar {value: 0.6}
             }
             ''', QUrl())
 
@@ -296,7 +304,9 @@ def test_PyQt5_QtQuick(pyi_builder):
         # Exit Qt when the main loop becomes idle.
         QTimer.singleShot(0, app.exit)
 
-        sys.exit(app.exec_())
+        res = app.exec_()
+        del engine
+        sys.exit(res)
         """)
 
 
@@ -491,7 +501,7 @@ def test_pycrypto(pyi_builder):
         print('AES null encryption, block size', BLOCK_SIZE)
         # Just for testing functionality after all
         print('HEX', binascii.hexlify(
-            AES.new("\\0" * BLOCK_SIZE).encrypt("\\0" * BLOCK_SIZE)))
+            AES.new(b"\\0" * BLOCK_SIZE, AES.MODE_ECB).encrypt(b"\\0" * BLOCK_SIZE)))
         """)
 
 
@@ -504,6 +514,9 @@ def test_cryptodome(pyi_builder):
         """)
 
 
+@skipif(is_win and is_py37, reason='The call to ssl.wrap_socket produces '
+        '"ssl.SSLError: [SSL: EE_KEY_TOO_SMALL] ee key too small '
+        '(_ssl.c:3717)" on Windows Python 3.7.')
 @importorskip('requests')
 def test_requests(tmpdir, pyi_builder, data_dir, monkeypatch):
     # Note that including the data_dir fixture copies files needed by this test.
@@ -511,21 +524,6 @@ def test_requests(tmpdir, pyi_builder, data_dir, monkeypatch):
     datas = os.pathsep.join((str(data_dir.join('*')), os.curdir))
     pyi_builder.test_script('pyi_lib_requests.py',
                             pyi_args=['--add-data', datas])
-
-
-@importorskip('requests.packages.urllib3.packages.six')
-def test_requests_urllib3_six(pyi_builder):
-    # Test for pre-safe-import requests.packages.urllib3.packages.six.moves.
-    pyi_builder.test_source(
-        """
-        import requests.packages.urllib3.connectionpool
-        import types
-        assert isinstance(requests.packages.urllib3.connectionpool.queue,
-                          types.ModuleType)
-        """,
-        # Need to exclude urllib3, otherwise requests.packages would
-        # fall back to this
-        pyi_args=['--exclude-module', 'urllib3'])
 
 
 @importorskip('urllib3.packages.six')
@@ -806,6 +804,7 @@ def test_uvloop(pyi_builder):
 @importorskip('web3')
 def test_web3(pyi_builder):
     pyi_builder.test_source("import web3")
+
 
 @importorskip('phonenumbers')
 def test_phonenumbers(pyi_builder):
